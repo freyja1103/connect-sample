@@ -14,13 +14,12 @@ import (
 
 type GreetServer struct{}
 
-func (s *GreetServer) Greet(ctx context.Context, in *greetv1.GreetRequest) (*greetv1.GreetResponse, error) {
-	req := new(connect.Request[greetv1.GreetRequest])
+func (s *GreetServer) Greet(ctx context.Context, req *connect.Request[greetv1.GreetRequest]) (*connect.Response[greetv1.GreetResponse], error) {
 	slog.InfoContext(ctx, "request headers", slog.Any("header", req.Header()))
 
-	return &greetv1.GreetResponse{
-		Greeting: "Hello, " + in.Name + "!",
-	}, nil
+	return connect.NewResponse(&greetv1.GreetResponse{
+		Greeting: "Hello, " + req.Msg.Name + "!",
+	}), nil
 }
 
 func main() {
