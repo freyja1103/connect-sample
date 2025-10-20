@@ -4,12 +4,12 @@ import (
 	greetv1 "connect-sample/gen/greet/v1"
 	"connect-sample/gen/greet/v1/greetv1connect"
 	"context"
+	"fmt"
 	"log/slog"
-	"net/http"
 
 	"connectrpc.com/connect"
+	"github.com/labstack/echo/v4"
 	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 )
 
 type GreetServer struct{}
@@ -25,8 +25,9 @@ func (s *GreetServer) Greet(ctx context.Context, in *greetv1.GreetRequest) (*gre
 
 func main() {
 	greeter := &GreetServer{}
-	serveMux := http.NewServeMux()
 	path, handler := greetv1connect.NewGreetServiceHandler(greeter)
-	serveMux.Handle(path, handler)
-	http.ListenAndServe("localhost:8080", h2c.NewHandler(serveMux, &http2.Server{}))
+
+	e := echo.New()
+	e.Any(fmt.Sprintf("%s*", path), echo.WrapHandler(handler))
+	e.StartH2CServer("localhost:8080", &http2.Server{})
 }
